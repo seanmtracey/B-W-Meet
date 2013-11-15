@@ -1,277 +1,156 @@
-var __bwMeet13 = (function(){
+var __bwMeet14 = (function(){
 
 	'use strict';
 
-	var WebGL = {
-		scene : undefined,
-		camera : undefined,
-		lights : [],
-		renderer : undefined,
-		context : undefined
-	},
-	frame = document.getElementById('frame'),
-	objects = [],
-	spaceDown = false,
-	audio = {
-		context : undefined,
-		source : undefined,
-		analyser : undefined,
-		sourceNode : undefined
-	},
-	cubeLimiter = 88;
-
-
+	var frame = document.getElementById('frame'),
+		canvas = document.getElementsByTagName('canvas')[0],
+		ctx = canvas.getContext('2d'),
+		windParticles = [],
+		wind = {
+			speed : undefined,
+			direction : undefined
+		};
 
 	var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame; 
 		window.requestAnimationFrame = requestAnimationFrame;
 
-	function handleAudio(data){
+	function animate(){
 
-		var otherAuds = document.getElementsByTagName('audio');
+		ctx.clearRect(0,0,canvas.width, canvas.height);
 
-		for(var aj = 0; aj < otherAuds.length; aj += 1){
-			otherAuds[aj].parentElement.removeChild(otherAuds[aj]);
-		}
+		var tp = 0;
 
-		var buff = new Uint8Array(data.target.result);
-		var blob = new Blob([buff], {type: 'audio/mpeg'});
+		while(tp < windParticles.length){
 
-		var aud = new Audio();
-		aud.setAttribute('type', 'audio/mpeg');
-		aud.src = URL.createObjectURL(blob);
-		aud.load();
-		document.body.appendChild(aud);
+			var thisParticle = windParticles[tp];
 
-		aud.addEventListener('canplaythrough', function(){
-			
-			audio.context = new AudioContext() || new webkitAudioContext();
-			audio.analyser = audio.context.createAnalyser();
-			audio.sourceNode = audio.context.createMediaElementSource(aud);
-			audio.sourceNode.connect(audio.analyser);
-			audio.sourceNode.connect(audio.context.destination);
-
-			console.log(aud);
-			
-			(function(){
-				setTimeout(function(){
-					aud.play();
-				}, 1000);
-			})();
-
-			document.getElementById('tint').setAttribute('class', 'fadeOut');
-		}, true);
-
-
-		aud.addEventListener('ended', function(){
-			aud.parentElement.removeChild(aud);
-			document.getElementById('tint').setAttribute('class', 'fadeIn');
-		})
-
-	}
-
-	function loadFile(e){
-		var file = e.dataTransfer.files[0];
-
-		var reader = new FileReader();
-
-		reader.onload = handleAudio;
-
-		reader.readAsArrayBuffer(file);
-	}
-
-	function drawScene(){
-
-		var xx = 0;
-
-		while(xx < objects.length){
+			ctx.fillStyle = "rgba(" + thisParticle.color.r + "," + thisParticle.color.g + "," + thisParticle.color.b + "," + thisParticle.color.a + ")";
 		
-			if(xx % 2 === 0){
-				objects[xx].rotation.x += objects[xx].custom.spin.x;
-				objects[xx].rotation.y += objects[xx].custom.spin.y;
-				objects[xx].rotation.z += objects[xx].custom.spin.z;
+			// console.log("rgba(" + thisParticle.color.r + "," + thisParticle.color.g + "," + thisParticle.color.b + thisParticle.color.a + ")");
 
-			} else {
-				objects[xx].rotation.x -= objects[xx].custom.spin.x;
-				objects[xx].rotation.y -= objects[xx].custom.spin.y;
-				objects[xx].rotation.z -= objects[xx].custom.spin.z;
+			ctx.fillRect(thisParticle.x, thisParticle.y, thisParticle.size * 8, thisParticle.size * 8);
 
-				if(spaceDown){
-					objects[xx].material.color.setHex(objects[xx].custom.color);
-					objects[xx].scale.x = objects[xx].scale.y = objects[xx].scale.z = 2;
-				} else {
-					//objects[xx].material.color.setHex(0x000000);
-				}
+			// thisParticle.x += thisParticle.speed;
+			// thisParticle.y += thisParticle.speed;
 
+			// function trigonometry(whichIsIt, xOrY, radius, angle){
+
+			thisParticle.x = maths.trig("X", thisParticle.x, thisParticle.speed, wind.direction - 90);
+			thisParticle.y = maths.trig("Y", thisParticle.y, thisParticle.speed, wind.direction - 90);
+
+			if(thisParticle.x > canvas.width){
+				thisParticle.x = 0;
 			}
 
-			// objects[xx].scale.x = objects[xx].scale.y = objects[xx].scale.z = Math.random() * 2;
+			if(thisParticle.x < 0){
+				thisParticle.x = canvas.width
+			}
 
-			xx += 1;
+			if(thisParticle.y > canvas.height){
+				thisParticle.y = 0;
+			}
+
+			if(thisParticle.y < 0){
+				thisParticle.y = canvas.height;
+			}
+
+
+			tp += 1;
 
 		}
 
-		if(audio.analyser !== undefined && audio.analyser.frequencyBinCount !== undefined){
-
-			var arr = new Uint8Array(audio.analyser.frequencyBinCount);
-				audio.analyser.getByteFrequencyData(arr);
-				
-			var xw = 0;
-
-			while(xw < arr.length){
-
-				//var cube = objects[Math.floor((Math.floor((88 / arr.length) * 100) / 88) * 100)];
-
-				Math.round((1024 / 1024) * 100) / 100 * 88
-
-				var cube = objects[Math.floor((((xw / arr.length) * 100) / 100) * cubeLimiter)];
-
-				// if(cube !== undefined){
-					cube.scale.x = cube.scale.y = cube.scale.z = 1 + (arr[xw] / 100);
-					
-					if(cube.scale.x > 1){
-						cube.material.color.setHex(cube.custom.color);
-					}
-
-					if(cube.material.color.r > 0){
-						cube.material.color.r -= 0.1;
-					}
-
-					if(cube.material.color.g > 0){
-						cube.material.color.g -= 0.1;
-					}
-
-					if(cube.material.color.b > 0){
-						cube.material.color.b -= 0.1;
-					}
-
-					if(cube.scale.x > 1){
-						cube.scale.x = cube.scale.y = cube.scale.z -= 0.1;
-					}
-				// }
-
-				xw += 1;
-
-			}
-
-		}
-
-		WebGL.renderer.render(WebGL.scene, WebGL.camera);
-
-		requestAnimationFrame(drawScene);
+		requestAnimationFrame(animate);
 
 	}
 
-	function buildScene(){
+	function createWindParticles(){
 
-		var Max = cubeLimiter;
+		var maxParticles = 500,
+			az = 0;
 
-		for(var x = 0; x < Max; x += 1){
+		while(az < maxParticles){
 
-			var nObj = shapes.cube(5 ,5, 5, 0xFF00FF);
-				nObj.custom = {};
-				nObj.position.set(x - Math.random() * Max, x - Math.random() * Max, x - Math.random() * Max);
+			var size = Math.round(Math.random()*3),
+				speed = Math.round(Math.random()*wind.speed) / size,
+				pX = Math.round(Math.random()*canvas.width),
+				pY = Math.round(Math.random()*canvas.height),
+				alpha = Math.random();
 
-				if(x % 3 === 0){
-					nObj.custom.color = 0xFF0000;
-				} else if(x % 3 === 1){
-					nObj.custom.color = 0x0000FF;
-				} else {
-					nObj.custom.color = 0xFFFF00;
+			if(size === 0){
+				size = 1;
+			}
+
+			if(speed === 0){
+				speed = 1;
+			}
+
+			windParticles.push({
+				size : size,
+				speed : speed,
+				x : pX,
+				y : pY,
+				color : {
+					r : 83,
+					g : 142,
+					b : 239,
+					a : alpha
 				}
+			})
 
-			nObj.material.color.setHex(0x000000);
-
-			nObj.material.needsUpdate = true;
-			nObj.geometry.verticesNeedUpdate = true;
-			nObj.custom.spin = {x : Math.random() / 100, y : Math.random() / 100, z : Math.random() / 100}
-
-			objects.push(nObj);
-				
-			WebGL.scene.add(objects[x]);
+			az += 1;
 
 		}
 
-		drawScene();
+		animate();
+
+	}
+
+	function getWeather(){
+    	
+    	// var url = "http://query.yahooapis.com/v1/public/yql?q=select item from weather.forecast where location=13383&format=json&nojsoncallback=1&callback=?";
+		var url = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%3D13383&format=json&diagnostics=true&callback=";
+
+		jQuery.ajax({
+			type : "GET",
+			dataType : 'json',
+			// url : "http://weather.yahooapis.com/forecastrss?w=13383&u=c&format=json&nojsoncallback=1&callback=?",
+			url : url, 
+			success : function(e){
+				
+				var result = e.query.results.channel;
+
+				wind.speed = result.wind.speed;
+				wind.direction = result.wind.direction;
+
+				console.log(wind);
+				createWindParticles();
+
+			},
+			error : function(e){
+				console.error(e);
+			}
+		})
 
 	}
 
 	function addEvents(){
 
-		frame.addEventListener('dragover', function(e){
-			e.stopPropagation();
-			e.preventDefault();
-			console.log("Drag");
-		}, true);
-
-		frame.addEventListener('drop', function(e){
-			e.stopPropagation();
-			e.preventDefault();
-			console.log(e);
-			loadFile(e);
-		}, true);
-
-		document.addEventListener('keydown', function(e){
-			if(e.keyCode == 32){
-				e.preventDefault();
-				spaceDown = true;
-			}
-		}, false);
-
-		document.addEventListener('keyup', function(e){
-			if(e.keyCode == 32){
-				e.preventDefault();
-				spaceDown = false;
-			}
-		}, false);
-	
-
 	}
 
 	function init(){
 
-		window.AudioContext = window.AudioContext || window.webkitAudioContext;
-
-		console.log(audio.context);
-		
-		WebGL.camera = new THREE.PerspectiveCamera(75, frame.offsetWidth / frame.offsetHeight, 1, 500);
-		WebGL.camera.position.z = 100;
-		WebGL.scene = new THREE.Scene();
-
-		WebGL.lights.push(new THREE.DirectionalLight(0xffffff, 1));
-		WebGL.lights[0].position.set(0, 20,50);
-		WebGL.scene.add(WebGL.lights[0])
-
-		WebGL.renderer = new THREE.WebGLRenderer({antialias :  true,  preserveDrawingBuffer: true});
-		WebGL.renderer.setSize(frame.offsetWidth, frame.offsetHeight);
-		WebGL.renderer.setClearColor(0xFFFFFF, 1);
-
-		WebGL.renderer.domElement.setAttribute('id', 'WebGL');
-
-		frame.appendChild(WebGL.renderer.domElement);
-
+		console.log("BWMEET 14 BABY, YEAH!!!");
 		addEvents();
-
-		buildScene();
+		getWeather();
+		//createWindParticles();
 
 	}
 
 	return {
-		init : init,
-		objects : objects
+		init : init
 	};
 })();
 
 (function(){
-	__bwMeet13.init();
+	__bwMeet14.init();
 })();
-
-function sections(number){
-
-	/*var range = 88,
-		sections = 88,
-		setSize = range / sections,
-		answer = Math.ceil(number / setSize);*/
-	
-	return answer;	
-
-}
