@@ -104,8 +104,7 @@ var __bwMeet14 = (function(){
 
 		}
 
-		animate();
-
+		requestAnimationFrame(animate);
 	}
 
 	function getWeather(){
@@ -148,7 +147,6 @@ var __bwMeet14 = (function(){
 		console.log("BWMEET 14 BABY, YEAH!!!");
 		addEvents();
 		getWeather();
-		//createWindParticles();
 
 	}
 
