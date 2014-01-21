@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="animations.css">
 <link rel="shortcut icon" href="favicon.ico">
 <link href='http://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet' type='text/css'>
-<meta name="viewport" content="initial-scale=1.0" />
+<!--<meta name="viewport" content="initial-scale=1.0" />-->
 </head>
 <body>
 
@@ -20,6 +20,13 @@
 
 					<section id="content">
 						
+						<div id="directionHolder">
+
+							<img src="assets/images/wayTheWindBlows.png" id="turnable" alt="A graphic to indicate the direction of the wind">
+							<img src="assets/images/mask.png" alt="A graphic to indicate the direction of the wind">
+
+						</div>
+
 						<canvas width="1000" height="1410">
 							<p>Hey Fellow internet surfer, Why U No Canvas?</p>
 						</canvas>
@@ -60,6 +67,7 @@
 						<li class="active"><a>What's it all about?</a></li>
 						<li><a>Who are you guys?</a></li>
 						<li><a>What's with the poster?</a></li>
+						<li><a>Why is it free?</a></li>
 					</ul>
 				</nav>
 
@@ -82,6 +90,14 @@
 					<p>Now, the problem with building a website around the new and shiny of the web is that not everyone can see it, We promise we'll always do our best to make sure the site fails gracefully and gives you the info you need.</p>
 				</article>
 
+				<article>
+					<p>It's free thanks to our wonder sponsor:</p>
+					<p>
+						<a href="http://www.campaignmonitor.com/">Campaign Monitor</a>
+						makes it easy to attract new subscribers, send them beautiful email newsletters and see stunning reports on the results. Built from the ground up for creative professionals, you can also rebrand the app, manage all your clients from a single account and let them send campaigns at prices you set.
+					</p>
+					<p><em>They're also tremendously nice people.</em></p>
+				</article>
 
 			</section>
 
@@ -92,10 +108,8 @@
 	</main>
 
 <script src="scripts/libraries/jquery.js"></script>
-<script src="scripts/libraries/three.min.js"></script>
-<script src="scripts/libraries/shapes.js"></script>
-<script src="scripts/menu.js"></script>
 <script src="scripts/libraries/maths.js"></script>
+<script src="scripts/menu.js"></script>
 <script src="scripts/core.js"></script>
 
 <script>

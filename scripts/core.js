@@ -5,6 +5,7 @@ var __bwMeet14 = (function(){
 	var frame = document.getElementById('frame'),
 		canvas = document.getElementsByTagName('canvas')[0],
 		ctx = canvas.getContext('2d'),
+		turnable = document.getElementById('turnable'),
 		windParticles = [],
 		wind = {
 			speed : undefined,
@@ -22,38 +23,31 @@ var __bwMeet14 = (function(){
 
 		while(tp < windParticles.length){
 
-			var thisParticle = windParticles[tp];
+			var thisParticle = windParticles[tp],
+				color = thisParticle.color;
 
-			ctx.fillStyle = "rgba(" + thisParticle.color.r + "," + thisParticle.color.g + "," + thisParticle.color.b + "," + thisParticle.color.a + ")";
+			ctx.fillStyle = "rgba(" + color.r + "," + color.g + "," + color.b + "," + color.a + ")";
 		
-			// console.log("rgba(" + thisParticle.color.r + "," + thisParticle.color.g + "," + thisParticle.color.b + thisParticle.color.a + ")");
-
 			ctx.fillRect(thisParticle.x, thisParticle.y, thisParticle.size * 8, thisParticle.size * 8);
-
-			// thisParticle.x += thisParticle.speed;
-			// thisParticle.y += thisParticle.speed;
-
-			// function trigonometry(whichIsIt, xOrY, radius, angle){
 
 			thisParticle.x = maths.trig("X", thisParticle.x, thisParticle.speed, wind.direction - 90);
 			thisParticle.y = maths.trig("Y", thisParticle.y, thisParticle.speed, wind.direction - 90);
 
 			if(thisParticle.x > canvas.width){
-				thisParticle.x = 0;
+				thisParticle.x = -30;
 			}
 
-			if(thisParticle.x < 0){
+			if(thisParticle.x < -30){
 				thisParticle.x = canvas.width
 			}
 
 			if(thisParticle.y > canvas.height){
-				thisParticle.y = 0;
+				thisParticle.y = -30;
 			}
 
-			if(thisParticle.y < 0){
+			if(thisParticle.y < -30){
 				thisParticle.y = canvas.height;
 			}
-
 
 			tp += 1;
 
@@ -70,11 +64,18 @@ var __bwMeet14 = (function(){
 
 		while(az < maxParticles){
 
-			var size = Math.round(Math.random()*3),
-				speed = Math.round(Math.random()*wind.speed) / size,
-				pX = Math.round(Math.random()*canvas.width),
-				pY = Math.round(Math.random()*canvas.height),
-				alpha = Math.random();
+			var size = Math.round(Math.random() * 3),
+				speed = Math.round(Math.random() * wind.speed) / size,
+				pX = Math.round(Math.random() * canvas.width),
+				pY = Math.round(Math.random() * canvas.height),
+				alpha = Math.random(),
+				backwards;
+
+			if(az % 2 == 0){
+				backwards = false;
+			} else {
+				backwards = true;
+			}
 
 			if(size === 0){
 				size = 1;
@@ -94,7 +95,9 @@ var __bwMeet14 = (function(){
 					g : 142,
 					b : 239,
 					a : alpha
-				}
+				},
+				currentVariance : 0,
+				backwards : backwards
 			})
 
 			az += 1;
@@ -106,14 +109,12 @@ var __bwMeet14 = (function(){
 	}
 
 	function getWeather(){
-    	
-    	// var url = "http://query.yahooapis.com/v1/public/yql?q=select item from weather.forecast where location=13383&format=json&nojsoncallback=1&callback=?";
+    
 		var url = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%3D13383&format=json&diagnostics=true&callback=";
 
 		jQuery.ajax({
 			type : "GET",
 			dataType : 'json',
-			// url : "http://weather.yahooapis.com/forecastrss?w=13383&u=c&format=json&nojsoncallback=1&callback=?",
 			url : url, 
 			success : function(e){
 				
@@ -123,6 +124,11 @@ var __bwMeet14 = (function(){
 				wind.direction = result.wind.direction;
 
 				console.log(wind);
+
+				turnable.style.webkitTransform = "rotate(" + wind.direction + "deg)";
+				turnable.style.MozTransform = "rotate(" + wind.direction + "deg)";
+				turnable.style.transform = "rotate(" + wind.direction + "deg)";
+
 				createWindParticles();
 
 			},
